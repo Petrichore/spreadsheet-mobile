@@ -2,6 +2,7 @@ import com.android.build.api.dsl.ApplicationExtension
 
 plugins {
     id("com.android.application")
+    id("android-base-setup")
 }
 
 configure<ApplicationExtension> {
