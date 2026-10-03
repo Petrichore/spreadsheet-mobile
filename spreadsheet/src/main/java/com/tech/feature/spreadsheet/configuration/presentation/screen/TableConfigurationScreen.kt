@@ -13,14 +13,19 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices
@@ -36,20 +41,32 @@ import com.tech.spreadsheet.brandbook.theme.AppTheme
 fun TableConfigurationScreen(
     viewModel: TableConfigurationViewModel = hiltViewModel(),
 ) {
+    val screenState by viewModel.screenState.collectAsState()
+
     TableConfigurationContent(
+        state = screenState,
         onViewTableClick = {
             viewModel.onIntent(ConfigurationScreenIntent.CreateTable)
         },
         onCreateTableClick = {
             viewModel.onIntent(ConfigurationScreenIntent.CreateTable)
-        }
+        },
+        onColumnValueChanged = { value ->
+            viewModel.onIntent(ConfigurationScreenIntent.UpdateColumnValue(value))
+        },
+        onRowValueChanged = { value ->
+            viewModel.onIntent(ConfigurationScreenIntent.UpdateRowValue(value))
+        },
     )
 }
 
 @Composable
 private fun TableConfigurationContent(
+    state: ConfigurationScreenState,
     onCreateTableClick: () -> Unit = {},
     onViewTableClick: () -> Unit = {},
+    onColumnValueChanged: (String) -> Unit = {},
+    onRowValueChanged: (String) -> Unit = {},
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -60,7 +77,11 @@ private fun TableConfigurationContent(
         Spacer(modifier = Modifier.weight(1f))
 
         NumberFieldsContent(
-            modifier = Modifier.align(Alignment.CenterHorizontally)
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            onColumnValueChanged = onColumnValueChanged,
+            onRowValueChanged = onRowValueChanged,
+            rowValue = state.rowValue,
+            columnValue = state.columnValue,
         )
         Spacer(modifier = Modifier.weight(1f))
 
@@ -102,19 +123,29 @@ private fun ConfigurationHeader(
 
 @Composable
 private fun NumberFieldsContent(
+    onColumnValueChanged: (String) -> Unit,
+    onRowValueChanged: (String) -> Unit,
+    rowValue: String,
+    columnValue: String,
     modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
+        // Column
         NumberField(
-            value = "20",
-            label = "Columns"
+            value = columnValue,
+            onValueChanged = onColumnValueChanged,
+            label = stringResource(R.string.spreadsheet_placeholder_column),
+            imeAction = ImeAction.Next,
         )
+        // Row
         NumberField(
-            value = "20",
-            label = "Rows",
+            value = rowValue,
+            onValueChanged = onRowValueChanged,
+            imeAction = ImeAction.Done,
+            label = stringResource(R.string.spreadsheet_placeholder_row),
             modifier = Modifier.padding(start = 12.dp)
         )
     }
@@ -124,21 +155,32 @@ private fun NumberFieldsContent(
 @Composable
 private fun NumberField(
     value: String,
+    imeAction: ImeAction,
     label: String,
-    modifier: Modifier = Modifier
+    onValueChanged: (String) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     OutlinedTextField(
+        modifier = modifier.width(100.dp),
         value = value,
-        onValueChange = {},
+        textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
         label = {
             Text(
-                label,
+                modifier = Modifier.fillMaxWidth(),
+                text = label,
                 textAlign = TextAlign.Center,
+                style = TextStyle.Default.copy(fontSize = 12.sp)
             )
         },
-        modifier = modifier,
+        onValueChange = {
+            onValueChanged.invoke(it)
+        },
         singleLine = true,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        maxLines = 1,
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number,
+            imeAction = imeAction
+        ),
     )
 }
 
@@ -204,6 +246,8 @@ private fun MyTableButton(
 @Composable
 fun GreetingPreview() {
     AppTheme {
-        TableConfigurationContent()
+        TableConfigurationContent(
+            state = ConfigurationScreenState(),
+        )
     }
 }

@@ -1,4 +1,6 @@
 <resources>
     <string name="spreadsheet_config_screen_title">Configure Table</string>
     <string name="spreadsheet_config_screen_subtitle">Enter number of row and columns</string>
+    <string name="spreadsheet_placeholder_column">Column</string>
+    <string name="spreadsheet_placeholder_row">Row</string>
 </resources>
