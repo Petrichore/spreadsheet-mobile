@@ -23,3 +23,6 @@ dependencyResolutionManagement {
 rootProject.name = "spreadsheet-mobile"
 include(":app")
 include(":spreadsheet")
+include(":brandbook")
+include(":spreadsheet:api")
+include(":navigation")

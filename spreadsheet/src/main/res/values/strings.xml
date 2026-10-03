@@ -1,0 +1,4 @@
+<resources>
+    <string name="spreadsheet_config_screen_title">Configure Table</string>
+    <string name="spreadsheet_config_screen_subtitle">Enter number of row and columns</string>
+</resources>
