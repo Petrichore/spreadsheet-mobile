@@ -1,4 +1,4 @@
-package com.tech.mobile.spreadsheet.presentation.theme
+package com.tech.spreadsheet.brandbook.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

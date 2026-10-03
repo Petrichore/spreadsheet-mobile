@@ -1,4 +1,4 @@
-package com.tech.mobile.spreadsheet.presentation
+package com.tech.mobile.spreadsheet.main.presentation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,7 +16,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tech.mobile.spreadsheet.R
-import com.tech.mobile.spreadsheet.presentation.theme.AppTheme
+import com.tech.spreadsheet.brandbook.theme.AppTheme
 
 @Composable
 internal fun MainScreen() {

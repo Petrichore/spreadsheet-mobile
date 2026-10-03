@@ -5,7 +5,9 @@ plugins {
 dependencies {
     implementation(files(libs.javaClass.superclass.protectionDomain.codeSource.location))
 
-    implementation(libs.android.gradlePlugin)
-    implementation(libs.kotlin.gradlePlugin)
-    implementation(libs.compose.compiler.gradlePlugin)
+    compileOnly(libs.android.gradlePlugin)
+    compileOnly(libs.kotlin.gradlePlugin)
+    compileOnly(libs.compose.compiler.gradlePlugin)
+    compileOnly(libs.kotlin.ksp.gradlePlugin)
+    compileOnly(libs.android.hilit.gradlePlugin)
 }

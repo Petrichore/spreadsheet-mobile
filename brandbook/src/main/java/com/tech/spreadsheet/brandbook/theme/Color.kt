@@ -1,4 +1,4 @@
-package com.tech.mobile.spreadsheet.presentation.theme
+package com.tech.spreadsheet.brandbook.theme
 
 import androidx.compose.ui.graphics.Color
 
