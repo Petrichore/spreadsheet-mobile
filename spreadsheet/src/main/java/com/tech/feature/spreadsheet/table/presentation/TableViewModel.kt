@@ -1,8 +1,6 @@
 package com.tech.feature.spreadsheet.table.presentation
 
 import androidx.lifecycle.ViewModel
-import com.tech.feature.spreadsheet.configuration.presentation.screen.ConfigurationScreenIntent
-import com.tech.feature.spreadsheet.destination.SpreadsheetDestination
 import com.tech.feature.spreadsheet.table.presentation.screen.TableScreenIntent
 import com.tech.mobile.navigation.NavigationCommand
 import com.tech.mobile.navigation.NavigationManager
