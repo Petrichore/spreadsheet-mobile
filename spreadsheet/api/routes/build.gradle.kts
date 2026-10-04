@@ -2,7 +2,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("java-library")
-    id("org.jetbrains.kotlin.jvm")
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
 }
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -15,6 +16,6 @@ kotlin {
 }
 
 dependencies {
-    implementation(libs.kotlin.coroutines.core)
-    implementation(libs.javax.inject)
+    implementation(project(":navigation"))
+    implementation(libs.kotlin.serialization.core)
 }

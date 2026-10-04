@@ -3,9 +3,10 @@ package com.tech.feature.spreadsheet.configuration.presentation
 import androidx.lifecycle.ViewModel
 import com.tech.feature.spreadsheet.configuration.presentation.screen.ConfigurationScreenIntent
 import com.tech.feature.spreadsheet.configuration.presentation.screen.ConfigurationScreenState
-import com.tech.feature.spreadsheet.destination.SpreadsheetDestination
-import com.tech.mobile.navigation.NavigationCommand
-import com.tech.mobile.navigation.NavigationManager
+import com.tech.spreadsheet.navigation.NavigationCommand
+import com.tech.spreadsheet.navigation.NavigationManager
+import com.tech.spreadsheet.navigation.Route
+import com.tech.spreadsheet.routes.SpreadsheetRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,9 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 
 private const val MAX_COLUMN = 6
-private const val MIN_COLUMN = 1
 private const val MAX_ROW = 1000
-private const val MIN_ROW = 1
 
 @HiltViewModel
 class TableConfigurationViewModel
@@ -33,17 +32,26 @@ class TableConfigurationViewModel
         when (intent) {
             is ConfigurationScreenIntent.UpdateColumnValue -> updateColumnValue(intent.value)
             is ConfigurationScreenIntent.UpdateRowValue -> updateRowValue(intent.value)
-            ConfigurationScreenIntent.CreateTable
-                -> performNavigationForward(SpreadsheetDestination.TableScreen)
-
-            ConfigurationScreenIntent.OpenTable
-                -> performNavigationForward(SpreadsheetDestination.TableScreen)
+            ConfigurationScreenIntent.CreateTable -> handleCreateTableIntent()
         }
     }
 
-    private fun performNavigationForward(destination: SpreadsheetDestination) {
+    private fun handleCreateTableIntent() {
+        val columnNumber = screenState.value.columnValue.toIntOrNull()
+        val rowNumber = screenState.value.rowValue.toIntOrNull()
+
+        if (columnNumber != null && rowNumber != null) {
+            val route = SpreadsheetRoute.TableScreen(
+                columnNumber = columnNumber,
+                rowNumber = rowNumber,
+            )
+            performNavigationForward(route)
+        }
+    }
+
+    private fun performNavigationForward(route: Route) {
         navigationManager.navigate(
-            NavigationCommand.Forward(destination)
+            NavigationCommand.Forward(route)
         )
     }
 

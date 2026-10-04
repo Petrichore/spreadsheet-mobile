@@ -8,10 +8,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -23,7 +25,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -45,9 +46,6 @@ fun TableConfigurationScreen(
 
     TableConfigurationContent(
         state = screenState,
-        onViewTableClick = {
-            viewModel.onIntent(ConfigurationScreenIntent.CreateTable)
-        },
         onCreateTableClick = {
             viewModel.onIntent(ConfigurationScreenIntent.CreateTable)
         },
@@ -64,7 +62,6 @@ fun TableConfigurationScreen(
 private fun TableConfigurationContent(
     state: ConfigurationScreenState,
     onCreateTableClick: () -> Unit = {},
-    onViewTableClick: () -> Unit = {},
     onColumnValueChanged: (String) -> Unit = {},
     onRowValueChanged: (String) -> Unit = {},
 ) {
@@ -87,7 +84,6 @@ private fun TableConfigurationContent(
 
         ButtonsContent(
             onCreateTableClick = onCreateTableClick,
-            onViewTableClick = onViewTableClick,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
         Spacer(modifier = Modifier.weight(1f))
@@ -161,22 +157,27 @@ private fun NumberField(
     modifier: Modifier = Modifier,
 ) {
     OutlinedTextField(
-        modifier = modifier.width(100.dp),
+        modifier = modifier.size(
+            width = 200.dp,
+            height = 112.dp
+        ),
         value = value,
-        textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+        textStyle = LocalTextStyle.current.copy(
+            textAlign = TextAlign.Center,
+            fontSize = 28.sp
+        ),
         label = {
             Text(
                 modifier = Modifier.fillMaxWidth(),
                 text = label,
                 textAlign = TextAlign.Center,
-                style = TextStyle.Default.copy(fontSize = 12.sp)
+                style = TextStyle.Default.copy(fontSize = 28.sp)
             )
         },
         onValueChange = {
             onValueChanged.invoke(it)
         },
         singleLine = true,
-        maxLines = 1,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Number,
             imeAction = imeAction
@@ -187,58 +188,43 @@ private fun NumberField(
 @Composable
 private fun ButtonsContent(
     onCreateTableClick: () -> Unit,
-    onViewTableClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        ApplyConfigButton(
-            clickAction = onViewTableClick
-        )
-        MyTableButton(
+        ConfigurationActionButton(
+            text = stringResource(R.string.spreadsheet_action_button_create_table),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary
+            ),
             clickAction = onCreateTableClick,
-            modifier = Modifier.padding(start = 12.dp)
         )
     }
 }
 
 @Composable
-private fun ApplyConfigButton(
+private fun ConfigurationActionButton(
     clickAction: () -> Unit,
     modifier: Modifier = Modifier,
+    text: String,
+    colors: ButtonColors,
 ) {
     Button(
         onClick = clickAction,
         modifier = modifier
-            .width(200.dp)
-            .height(56.dp),
+            .width(300.dp)
+            .height(84.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primary
-        )
+        colors = colors,
     ) {
-        Text("Create/Apply")
-    }
-}
-
-@Composable
-private fun MyTableButton(
-    clickAction: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Button(
-        onClick = clickAction,
-        modifier = modifier
-            .width(200.dp)
-            .height(56.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.secondary
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = text,
+            textAlign = TextAlign.Center,
+            style = TextStyle.Default.copy(fontSize = 28.sp)
         )
-    ) {
-        Text("Current Table")
     }
 }
 

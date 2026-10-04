@@ -4,8 +4,6 @@ sealed interface ConfigurationScreenIntent {
 
     data object CreateTable : ConfigurationScreenIntent
 
-    data object OpenTable : ConfigurationScreenIntent
-
     data class UpdateColumnValue(
         val value: String
     ) : ConfigurationScreenIntent
