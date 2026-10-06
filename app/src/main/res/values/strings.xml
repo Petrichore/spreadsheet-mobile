@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">spreadsheet-mobile</string>
 
-    <string name="main_screen_title">Spreadsheet</string>
+    <string name="main_device_unsupported_title">Tablet Required</string>
+    <string name="main_device_unsupported_message">Sorry, this app is only supported on tablets. Please use a tablet device.</string>
+    <string name="main_device_unsupported_close_app">Close</string>
 </resources>

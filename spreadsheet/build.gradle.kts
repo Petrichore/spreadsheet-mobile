@@ -10,6 +10,7 @@ android {
 
 dependencies {
     implementation(project(":brandbook"))
+    implementation(project(":spreadsheet:api:routes"))
     implementation(project(":navigation"))
 
     implementation(libs.androidx.compose.navigation)

@@ -1,5 +1,6 @@
 package com.tech.feature.spreadsheet.configuration.presentation.screen
 
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,19 +9,31 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices
@@ -31,28 +44,46 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.tech.feature.spreadsheet.R
 import com.tech.feature.spreadsheet.configuration.presentation.TableConfigurationViewModel
 import com.tech.spreadsheet.brandbook.theme.AppTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun TableConfigurationScreen(
     viewModel: TableConfigurationViewModel = hiltViewModel(),
 ) {
+    val screenState by viewModel.screenState.collectAsState()
+
     TableConfigurationContent(
-        onViewTableClick = {
-            viewModel.onIntent(ConfigurationScreenIntent.CreateTable)
-        },
+        state = screenState,
         onCreateTableClick = {
             viewModel.onIntent(ConfigurationScreenIntent.CreateTable)
-        }
+        },
+        onColumnValueChanged = { value ->
+            viewModel.onIntent(ConfigurationScreenIntent.UpdateColumnValue(value))
+        },
+        onRowValueChanged = { value ->
+            viewModel.onIntent(ConfigurationScreenIntent.UpdateRowValue(value))
+        },
     )
 }
 
 @Composable
 private fun TableConfigurationContent(
+    state: ConfigurationScreenState,
     onCreateTableClick: () -> Unit = {},
-    onViewTableClick: () -> Unit = {},
+    onColumnValueChanged: (String) -> Unit = {},
+    onRowValueChanged: (String) -> Unit = {},
 ) {
+
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .clearFocusOnTap(
+                scope = rememberCoroutineScope(),
+                focusManager = LocalFocusManager.current,
+                keyboardController = LocalSoftwareKeyboardController.current
+            ),
         verticalArrangement = Arrangement.Center
     ) {
         Spacer(modifier = Modifier.weight(1f))
@@ -60,13 +91,16 @@ private fun TableConfigurationContent(
         Spacer(modifier = Modifier.weight(1f))
 
         NumberFieldsContent(
-            modifier = Modifier.align(Alignment.CenterHorizontally)
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            onColumnValueChanged = onColumnValueChanged,
+            onRowValueChanged = onRowValueChanged,
+            rowValue = state.rowValue,
+            columnValue = state.columnValue,
         )
         Spacer(modifier = Modifier.weight(1f))
 
         ButtonsContent(
             onCreateTableClick = onCreateTableClick,
-            onViewTableClick = onViewTableClick,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
         Spacer(modifier = Modifier.weight(1f))
@@ -102,19 +136,29 @@ private fun ConfigurationHeader(
 
 @Composable
 private fun NumberFieldsContent(
+    onColumnValueChanged: (String) -> Unit,
+    onRowValueChanged: (String) -> Unit,
+    rowValue: String,
+    columnValue: String,
     modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
+        // Column
         NumberField(
-            value = "20",
-            label = "Columns"
+            value = columnValue,
+            onValueChanged = onColumnValueChanged,
+            label = stringResource(R.string.spreadsheet_placeholder_column),
+            imeAction = ImeAction.Next,
         )
+        // Row
         NumberField(
-            value = "20",
-            label = "Rows",
+            value = rowValue,
+            onValueChanged = onRowValueChanged,
+            imeAction = ImeAction.Done,
+            label = stringResource(R.string.spreadsheet_placeholder_row),
             modifier = Modifier.padding(start = 12.dp)
         )
     }
@@ -124,86 +168,106 @@ private fun NumberFieldsContent(
 @Composable
 private fun NumberField(
     value: String,
+    imeAction: ImeAction,
     label: String,
-    modifier: Modifier = Modifier
+    onValueChanged: (String) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     OutlinedTextField(
+        modifier = modifier.size(
+            width = 200.dp,
+            height = 112.dp
+        ),
         value = value,
-        onValueChange = {},
+        textStyle = LocalTextStyle.current.copy(
+            textAlign = TextAlign.Center,
+            fontSize = 28.sp
+        ),
         label = {
             Text(
-                label,
+                modifier = Modifier.fillMaxWidth(),
+                text = label,
                 textAlign = TextAlign.Center,
+                style = TextStyle.Default.copy(fontSize = 28.sp)
             )
         },
-        modifier = modifier,
+        onValueChange = {
+            onValueChanged.invoke(it)
+        },
         singleLine = true,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number,
+            imeAction = imeAction
+        ),
     )
 }
 
 @Composable
 private fun ButtonsContent(
     onCreateTableClick: () -> Unit,
-    onViewTableClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        ApplyConfigButton(
-            clickAction = onViewTableClick
-        )
-        MyTableButton(
+        ConfigurationActionButton(
+            text = stringResource(R.string.spreadsheet_action_button_create_table),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary
+            ),
             clickAction = onCreateTableClick,
-            modifier = Modifier.padding(start = 12.dp)
         )
     }
 }
 
 @Composable
-private fun ApplyConfigButton(
+private fun ConfigurationActionButton(
     clickAction: () -> Unit,
     modifier: Modifier = Modifier,
+    text: String,
+    colors: ButtonColors,
 ) {
     Button(
         onClick = clickAction,
         modifier = modifier
-            .width(200.dp)
-            .height(56.dp),
+            .width(300.dp)
+            .height(84.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primary
-        )
+        colors = colors,
     ) {
-        Text("Create/Apply")
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = text,
+            textAlign = TextAlign.Center,
+            style = TextStyle.Default.copy(fontSize = 28.sp)
+        )
     }
 }
 
-@Composable
-private fun MyTableButton(
-    clickAction: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Button(
-        onClick = clickAction,
-        modifier = modifier
-            .width(200.dp)
-            .height(56.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.secondary
+private fun Modifier.clearFocusOnTap(
+    scope: CoroutineScope,
+    focusManager: FocusManager,
+    keyboardController: SoftwareKeyboardController?
+): Modifier =
+    this.pointerInput(Unit) {
+        detectTapGestures(
+            onTap = {
+                scope.launch {
+                    keyboardController?.hide()
+                    delay(350)
+                    focusManager.clearFocus()
+                }
+            }
         )
-    ) {
-        Text("Current Table")
     }
-}
 
 @Preview(showBackground = true, device = Devices.PIXEL_TABLET)
 @Composable
 fun GreetingPreview() {
     AppTheme {
-        TableConfigurationContent()
+        TableConfigurationContent(
+            state = ConfigurationScreenState(),
+        )
     }
 }
