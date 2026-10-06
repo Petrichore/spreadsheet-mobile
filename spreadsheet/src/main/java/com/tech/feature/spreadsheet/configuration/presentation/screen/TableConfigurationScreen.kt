@@ -1,5 +1,6 @@
 package com.tech.feature.spreadsheet.configuration.presentation.screen
 
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,8 +23,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -37,6 +44,9 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.tech.feature.spreadsheet.R
 import com.tech.feature.spreadsheet.configuration.presentation.TableConfigurationViewModel
 import com.tech.spreadsheet.brandbook.theme.AppTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun TableConfigurationScreen(
@@ -65,8 +75,15 @@ private fun TableConfigurationContent(
     onColumnValueChanged: (String) -> Unit = {},
     onRowValueChanged: (String) -> Unit = {},
 ) {
+
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .clearFocusOnTap(
+                scope = rememberCoroutineScope(),
+                focusManager = LocalFocusManager.current,
+                keyboardController = LocalSoftwareKeyboardController.current
+            ),
         verticalArrangement = Arrangement.Center
     ) {
         Spacer(modifier = Modifier.weight(1f))
@@ -227,6 +244,23 @@ private fun ConfigurationActionButton(
         )
     }
 }
+
+private fun Modifier.clearFocusOnTap(
+    scope: CoroutineScope,
+    focusManager: FocusManager,
+    keyboardController: SoftwareKeyboardController?
+): Modifier =
+    this.pointerInput(Unit) {
+        detectTapGestures(
+            onTap = {
+                scope.launch {
+                    keyboardController?.hide()
+                    delay(350)
+                    focusManager.clearFocus()
+                }
+            }
+        )
+    }
 
 @Preview(showBackground = true, device = Devices.PIXEL_TABLET)
 @Composable
