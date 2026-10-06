@@ -8,10 +8,11 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.text.BasicTextField
@@ -78,31 +79,26 @@ private fun TableScreenContent(
     changeSelectState: (Cell) -> Unit = { _ -> },
     onCellValueChanged: (Cell, String) -> Unit = { _, _ -> },
 ) {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Top
-    ) {
-        TableHeader(
-            modifier = Modifier.padding(top = 20.dp),
+    screenState.table?.let { table ->
+        Table(
+            table = table,
+            rowNumber = screenState.rowNumber,
             columnNumber = screenState.columnNumber,
-            rowNumber = screenState.rowNumber
+            onCellValueChanged = onCellValueChanged,
+            changeSelectState = changeSelectState,
+            changeEditableState = changeEditableState,
+            modifier = Modifier
+                .padding(horizontal = 20.dp)
+                .padding(top = 20.dp)
         )
-
-        screenState.table?.let { table ->
-            Table(
-                table = table,
-                onCellValueChanged = onCellValueChanged,
-                changeSelectState = changeSelectState,
-                changeEditableState = changeEditableState,
-                modifier = Modifier.padding(20.dp)
-            )
-        }
     }
 }
 
 @Composable
 private fun Table(
     table: Table,
+    rowNumber: Int,
+    columnNumber: Int,
     onCellValueChanged: (Cell, String) -> Unit,
     changeEditableState: (Cell) -> Unit,
     changeSelectState: (Cell) -> Unit,
@@ -114,6 +110,15 @@ private fun Table(
         horizontalArrangement = Arrangement.spacedBy(2.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
+        item(span = { GridItemSpan(maxCurrentLineSpan) }) {
+            TableParams(
+                modifier = Modifier
+                    .padding(top = 20.dp)
+                    .fillMaxWidth(),
+                columnNumber = columnNumber,
+                rowNumber = rowNumber
+            )
+        }
         table.rows.forEachIndexed { index, cells ->
             items(cells) { cell ->
                 TableCell(
@@ -125,25 +130,6 @@ private fun Table(
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun TableHeader(
-    modifier: Modifier = Modifier,
-    columnNumber: Int,
-    rowNumber: Int
-) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.Start
-    ) {
-        TableParams(
-            modifier = Modifier.padding(start = 20.dp),
-            columnNumber = columnNumber,
-            rowNumber = rowNumber
-        )
     }
 }
 

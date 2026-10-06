@@ -16,12 +16,17 @@ import androidx.navigation.compose.rememberNavController
 import com.tech.spreadsheet.brandbook.theme.AppTheme
 import com.tech.spreadsheet.navigation.NavigationCommand
 import com.tech.spreadsheet.navigation.NavigationManager
+import com.tech.spreadsheet.navigation.Route
+import com.tech.spreadsheet.routes.SpreadsheetRoute
 import com.tech.spreadsheet.spreadsheet.main.navigation.SpreadsheetNavHost
+import com.tech.spreadsheet.spreadsheet.main.navigation.route.UnsupportedDeviceInfoScreenRoute
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
+
+private const val MIN_SCREEN_WIDTH_DP = 600
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -30,10 +35,11 @@ class MainActivity : ComponentActivity() {
     lateinit var navigationManager: NavigationManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
         enableEdgeToEdge()
-
         super.onCreate(savedInstanceState)
+
+        val startDestination = defineStartDestination()
+        setScreenOrientation(startDestination)
 
         setContent {
             val navController = rememberNavController()
@@ -49,9 +55,30 @@ class MainActivity : ComponentActivity() {
                     ) {
                         SpreadsheetNavHost(
                             navController = navController,
+                            startDestination = startDestination
                         )
                     }
                 }
+            }
+        }
+    }
+
+    private fun defineStartDestination(): Route {
+        return if (resources.configuration.smallestScreenWidthDp >= MIN_SCREEN_WIDTH_DP) {
+            SpreadsheetRoute.TableConfigurationScreen
+        } else {
+            UnsupportedDeviceInfoScreenRoute
+        }
+    }
+
+    private fun setScreenOrientation(startDestination: Route) {
+        when (startDestination) {
+            is SpreadsheetRoute -> {
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
+            }
+
+            else -> {
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED)
             }
         }
     }
@@ -68,7 +95,9 @@ class MainActivity : ComponentActivity() {
                     }
 
                     NavigationCommand.Back -> {
-                        navController.popBackStack()
+                        if (!navController.popBackStack()) {
+                            finish()
+                        }
                     }
 
                     NavigationCommand.None -> Unit
